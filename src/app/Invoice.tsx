@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface InvoiceItem {
@@ -47,7 +48,7 @@ const Invoice: React.FC<InvoiceProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto bg-white p-8">
+    <Card className="w-[210mm] h-[297mm] mx-auto bg-white p-8 shadow-lg">
       <CardContent>
         <div className="flex justify-between items-start mb-8">
           <div>
