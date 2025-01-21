@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import LogoUpload from './LogoUpload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ interface InvoiceFormData {
   dueDate: string;
   from: {
     company: string;
+    logo?: string;
     address: string[];
     email: string;
     phone: string;
@@ -222,12 +224,18 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
           <CardTitle>From (Your Details)</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label>Company Name</Label>
-            <Input
-              value={formData.from.company}
-              onChange={e => updateFromField('company', e.target.value)}
-              placeholder="Your Company"
+          <div className="space-y-4">
+            <div>
+              <Label>Company Name</Label>
+              <Input
+                value={formData.from.company}
+                onChange={e => updateFromField('company', e.target.value)}
+                placeholder="Your Company"
+              />
+            </div>
+            <LogoUpload
+              value={formData.from.logo}
+              onChange={(logo) => updateFromField('logo', logo)}
             />
           </div>
           <div className="space-y-2">

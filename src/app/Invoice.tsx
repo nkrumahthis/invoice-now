@@ -1,5 +1,4 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface InvoiceItem {
@@ -16,6 +15,7 @@ interface InvoiceProps {
   dueDate: string;
   from: {
     company: string;
+    logo?: string;
     address: string[];
     email: string;
     phone: string;
@@ -31,14 +31,14 @@ interface InvoiceProps {
   items: InvoiceItem[];
 }
 
-const Invoice: React.FC<InvoiceProps> = ({
+function Invoice({
   invoiceNumber,
   issueDate,
   dueDate,
   from,
   to,
   items,
-}) => {
+}: InvoiceProps) {
   const calculateSubtotal = () => {
     return items.reduce((sum, item) => sum + item.total, 0);
   };
@@ -51,14 +51,25 @@ const Invoice: React.FC<InvoiceProps> = ({
     <Card className="w-[210mm] h-[297mm] mx-auto bg-white p-8 shadow-lg">
       <CardContent>
         <div className="flex justify-between items-start mb-8">
-          <div>
-            <h1 className="text-2xl font-bold">{from.company}</h1>
-            {from.address.map((line, i) => (
-              <p key={i} className="text-gray-600">{line}</p>
-            ))}
-            <p className="text-gray-600">{from.email}</p>
-            <p className="text-gray-600">{from.phone}</p>
-            <p className="text-gray-600">{from.website}</p>
+          <div className="flex flex-col space-y-4">
+            {from.logo && (
+              <div className="w-32 h-32">
+                <img
+                  src={from.logo}
+                  alt={`${from.company} logo`}
+                  className="object-contain w-full h-full"
+                />
+              </div>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold">{from.company}</h1>
+              {from.address.map((line, i) => (
+                <p key={i} className="text-gray-600">{line}</p>
+              ))}
+              <p className="text-gray-600">{from.email}</p>
+              <p className="text-gray-600">{from.phone}</p>
+              <p className="text-gray-600">{from.website}</p>
+            </div>
           </div>
           <div className="text-right">
             <h2 className="text-3xl font-bold mb-2">Invoice: {invoiceNumber}</h2>
@@ -133,6 +144,6 @@ const Invoice: React.FC<InvoiceProps> = ({
       </CardContent>
     </Card>
   );
-};
+}
 
 export default Invoice;
