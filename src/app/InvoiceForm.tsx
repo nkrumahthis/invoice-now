@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,10 +36,39 @@ interface InvoiceFormProps {
 }
 
 function InvoiceForm({ onSubmit }: InvoiceFormProps) {
+  // Helper function to get today's date in YYYY-MM-DD format
+  function getTodayDate() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  // Helper function to get date 30 days from today in YYYY-MM-DD format
+  function getDueDate() {
+    const date = new Date();
+    date.setDate(date.getDate() + 30);
+    return date.toISOString().split('T')[0];
+  }
+
+  // Helper function to generate invoice number
+  function generateInvoiceNumber(companyName: string) {
+    const today = new Date();
+    const year = today.getFullYear().toString().slice(-2);
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    
+    // Get initials from company name
+    const initials = companyName
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase() || 'COM';
+
+    return `${initials}-${year}${month}${day}-0001`;
+  }
+
   const [formData, setFormData] = useState<InvoiceFormData>({
-    invoiceNumber: '',
-    issueDate: new Date().toISOString().split('T')[0],
-    dueDate: '',
+    invoiceNumber: generateInvoiceNumber('Company'),
+    issueDate: getTodayDate(),
+    dueDate: getDueDate(),
     from: {
       company: '',
       address: ['', '', ''],
@@ -64,6 +93,14 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
       }
     ]
   });
+
+  // Update invoice number when company name changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      invoiceNumber: generateInvoiceNumber(prev.from.company)
+    }));
+  }, [formData.from.company]);
 
   function updateFromField(field: keyof typeof formData.from, value: string) {
     setFormData(prev => ({
@@ -156,6 +193,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
                 value={formData.invoiceNumber}
                 onChange={e => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
                 placeholder="Invoice #"
+                disabled
               />
             </div>
             <div>
@@ -178,6 +216,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
         </CardContent>
       </Card>
 
+      {/* Rest of the form components remain the same */}
       <Card>
         <CardHeader>
           <CardTitle>From (Your Details)</CardTitle>
