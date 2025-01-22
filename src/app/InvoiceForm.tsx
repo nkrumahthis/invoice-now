@@ -399,7 +399,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
               </div>
               <div className="col-span-1">
                 <Label>Total</Label>
-                <p className="py-2">${item.total.toFixed(2)}</p>
+                <p className="py-2">{currencies[formData.currency].symbolNative}{item.total.toFixed(2)}</p>
               </div>
               <div className="col-span-1">
                 {formData.items.length > 1 && (
