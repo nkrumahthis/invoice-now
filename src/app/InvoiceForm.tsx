@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LogoUpload from './LogoUpload';
+import CurrencySelect from './CurrencySelect';
+import { currencies } from '@/lib/currencies';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +11,7 @@ interface InvoiceFormData {
   invoiceNumber: string;
   issueDate: string;
   dueDate: string;
+  currency: string;
   from: {
     company: string;
     logo?: string;
@@ -71,6 +74,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
     invoiceNumber: generateInvoiceNumber('Company'),
     issueDate: getTodayDate(),
     dueDate: getDueDate(),
+    currency: 'USD',
     from: {
       company: '',
       address: ['', '', ''],
@@ -188,31 +192,46 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
           <CardTitle>Invoice Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label>Invoice Number</Label>
-              <Input
-                value={formData.invoiceNumber}
-                onChange={e => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                placeholder="Invoice #"
-                disabled
-              />
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Invoice Number</Label>
+                <Input
+                  value={formData.invoiceNumber}
+                  onChange={e => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                  placeholder="Invoice #"
+                  disabled
+                />
+              </div>
+              <div>
+                <Label>Issue Date</Label>
+                <Input
+                  type="date"
+                  value={formData.issueDate}
+                  onChange={e => setFormData(prev => ({ ...prev, issueDate: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label>Due Date</Label>
+                <Input
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={e => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                />
+              </div>
             </div>
+            
             <div>
-              <Label>Issue Date</Label>
-              <Input
-                type="date"
-                value={formData.issueDate}
-                onChange={e => setFormData(prev => ({ ...prev, issueDate: e.target.value }))}
+              <Label>Currency</Label>
+              <CurrencySelect
+                value={formData.currency}
+                onChange={(currency) => setFormData(prev => ({ ...prev, currency }))}
               />
-            </div>
-            <div>
-              <Label>Due Date</Label>
-              <Input
-                type="date"
-                value={formData.dueDate}
-                onChange={e => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-              />
+              {formData.currency && currencies[formData.currency] && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Amounts will be shown in {currencies[formData.currency].name} ({currencies[formData.currency].symbolNative})
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
