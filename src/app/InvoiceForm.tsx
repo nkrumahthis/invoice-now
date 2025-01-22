@@ -200,7 +200,6 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
                   value={formData.invoiceNumber}
                   onChange={e => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
                   placeholder="Invoice #"
-                  disabled
                 />
               </div>
               <div>
