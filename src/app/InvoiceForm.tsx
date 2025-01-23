@@ -192,51 +192,48 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
           <CardTitle>Invoice Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-6">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Invoice Number</Label>
-                <Input
-                  value={formData.invoiceNumber}
-                  onChange={e => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                  placeholder="Invoice #"
-                />
-              </div>
-              <div>
-                <Label>Issue Date</Label>
-                <Input
-                  type="date"
-                  value={formData.issueDate}
-                  onChange={e => setFormData(prev => ({ ...prev, issueDate: e.target.value }))}
-                />
-              </div>
-              <div>
-                <Label>Due Date</Label>
-                <Input
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={e => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                />
-              </div>
-            </div>
-            
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <Label>Currency</Label>
-              <CurrencySelect
-                value={formData.currency}
-                onChange={(currency) => setFormData(prev => ({ ...prev, currency }))}
+              <Label>Invoice Number</Label>
+              <Input
+                value={formData.invoiceNumber}
+                onChange={e => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                placeholder="Invoice #"
               />
-              {formData.currency && currencies[formData.currency] && (
-                <p className="mt-1 text-sm text-gray-500">
-                  Amounts will be shown in {currencies[formData.currency].name} ({currencies[formData.currency].symbolNative})
-                </p>
-              )}
             </div>
+            <div>
+              <Label>Issue Date</Label>
+              <Input
+                type="date"
+                value={formData.issueDate}
+                onChange={e => setFormData(prev => ({ ...prev, issueDate: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label>Due Date</Label>
+              <Input
+                type="date"
+                value={formData.dueDate}
+                onChange={e => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+              />
+            </div>
+          </div>
+            
+          <div>
+            <Label>Currency</Label>
+            <CurrencySelect
+              value={formData.currency}
+              onChange={(currency) => setFormData(prev => ({ ...prev, currency }))}
+            />
+            {formData.currency && currencies[formData.currency] && (
+              <p className="mt-1 text-sm text-gray-500">
+                Amounts will be shown in {currencies[formData.currency].name} ({currencies[formData.currency].symbolNative})
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Rest of the form components remain the same */}
       <Card>
         <CardHeader>
           <CardTitle>From (Your Details)</CardTitle>
@@ -267,7 +264,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
               />
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Email</Label>
               <Input
@@ -331,7 +328,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
               />
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Email</Label>
               <Input
@@ -359,7 +356,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {formData.items.map((item, index) => (
-            <div key={index} className="grid grid-cols-12 gap-4 items-end border-b pb-4">
+            <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end border-b pb-4">
               <div className="col-span-4">
                 <Label>Product/Service</Label>
                 <Input
@@ -427,7 +424,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
       </Card>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+        <Button type="submit" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
           Generate Invoice
         </Button>
       </div>
