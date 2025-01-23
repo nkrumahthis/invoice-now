@@ -1,5 +1,3 @@
-// lib/currencies.ts
-
 export interface Currency {
 	code: string;
 	symbol: string;

@@ -1,6 +1,6 @@
 import type React from "react"
 import { useState, useMemo, useEffect } from "react"
-import { Check, ChevronsUpDown, Plus } from "lucide-react"
+import { Check, ChevronsUpDown, Plus, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { currencies, COMMON_CURRENCIES, type Currency } from "@/lib/currencies"
+import { currencies as defaultCurrencies, COMMON_CURRENCIES, type Currency } from "@/lib/currencies"
 
 interface CustomCurrency extends Currency {
   isCustom?: boolean
@@ -29,44 +29,45 @@ function CurrencySelect({ value, onChange }: CurrencySelectProps) {
     symbolNative: "",
     name: "",
   })
-  const [customCurrencies, setCustomCurrencies] = useState<Record<string, CustomCurrency>>({})
+  const [currencies, setCurrencies] = useState<Record<string, CustomCurrency>>(defaultCurrencies)
 
   // Load custom currencies from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("customCurrencies")
-    if (stored) {
-      try {
-        setCustomCurrencies(JSON.parse(stored))
-      } catch (e) {
-        console.error("Failed to parse custom currencies:", e)
+    const loadCustomCurrencies = () => {
+      const stored = localStorage.getItem("customCurrencies")
+      if (stored) {
+        try {
+          const customCurrencies = JSON.parse(stored)
+          setCurrencies((prevCurrencies) => ({
+            ...prevCurrencies,
+            ...customCurrencies,
+          }))
+        } catch (e) {
+          console.error("Failed to parse custom currencies:", e)
+        }
       }
     }
+
+    loadCustomCurrencies()
   }, [])
 
-  // Get the current currency details from either built-in or custom currencies
+  // Get the current currency details
   const selectedCurrency = useMemo(() => {
     return (
-      currencies[value as keyof typeof currencies] ||
-      customCurrencies[value] || {
+      currencies[value] || {
         code: value,
         symbol: value,
         name: value,
       }
     )
-  }, [value, customCurrencies])
+  }, [value, currencies])
 
   // Filter and group currencies based on search
   const filteredCurrencies = useMemo(() => {
     const query = searchQuery.toLowerCase()
 
-    // Combine built-in and custom currencies
-    const allCurrencies = {
-      ...currencies,
-      ...customCurrencies,
-    }
-
     // Filter currencies based on search query
-    const filtered = Object.values(allCurrencies).filter(
+    const filtered = Object.values(currencies).filter(
       (currency) =>
         currency.code.toLowerCase().includes(query) ||
         currency.name.toLowerCase().includes(query) ||
@@ -75,11 +76,11 @@ function CurrencySelect({ value, onChange }: CurrencySelectProps) {
 
     // Group currencies
     const common = filtered.filter((c) => COMMON_CURRENCIES.includes(c.code))
-    const custom = filtered.filter((c) => (c as CustomCurrency).isCustom)
-    const others = filtered.filter((c) => !COMMON_CURRENCIES.includes(c.code) && !(c as CustomCurrency).isCustom)
+    const custom = filtered.filter((c) => c.isCustom)
+    const others = filtered.filter((c) => !COMMON_CURRENCIES.includes(c.code) && !c.isCustom)
 
     return { common, custom, others }
-  }, [searchQuery, customCurrencies])
+  }, [searchQuery, currencies])
 
   const handleCustomCurrencySubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,14 +93,20 @@ function CurrencySelect({ value, onChange }: CurrencySelectProps) {
       isCustom: true,
     }
 
-    // Update custom currencies
+    // Update currencies state
+    setCurrencies((prevCurrencies) => ({
+      ...prevCurrencies,
+      [customCurrency.code]: newCurrency,
+    }))
+
+    // Update localStorage
+    const storedCustomCurrencies = JSON.parse(localStorage.getItem("customCurrencies") || "{}")
     const updatedCustomCurrencies = {
-      ...customCurrencies,
+      ...storedCustomCurrencies,
       [customCurrency.code]: newCurrency,
     }
-
-    setCustomCurrencies(updatedCustomCurrencies)
     localStorage.setItem("customCurrencies", JSON.stringify(updatedCustomCurrencies))
+    window.dispatchEvent(new Event("storage"))
 
     onChange(customCurrency.code)
 
@@ -112,6 +119,26 @@ function CurrencySelect({ value, onChange }: CurrencySelectProps) {
       symbolNative: "",
       name: "",
     })
+  }
+
+  const handleDeleteCurrency = (currencyCode: string) => {
+    // Remove from currencies state
+    setCurrencies((prevCurrencies) => {
+      const newCurrencies = { ...prevCurrencies }
+      delete newCurrencies[currencyCode]
+      return newCurrencies
+    })
+
+    // Remove from localStorage
+    const storedCustomCurrencies = JSON.parse(localStorage.getItem("customCurrencies") || "{}")
+    delete storedCustomCurrencies[currencyCode]
+    localStorage.setItem("customCurrencies", JSON.stringify(storedCustomCurrencies))
+    window.dispatchEvent(new Event("storage"))
+
+    // If the deleted currency was selected, reset the selection
+    if (value === currencyCode) {
+      onChange("USD")
+    }
   }
 
   return (
@@ -266,13 +293,27 @@ function CurrencySelect({ value, onChange }: CurrencySelectProps) {
                       setOpen(false)
                     }}
                   >
-                    <Check className={cn("mr-2 h-4 w-4", value === currency.code ? "opacity-100" : "opacity-0")} />
-                    <span className="flex items-center gap-2">
-                      <span>{currency.symbol}</span>
-                      <span>{currency.code}</span>
-                      <span className="text-gray-500">-</span>
-                      <span>{currency.name}</span>
-                    </span>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <Check className={cn("mr-2 h-4 w-4", value === currency.code ? "opacity-100" : "opacity-0")} />
+                        <span className="flex items-center gap-2">
+                          <span>{currency.symbol}</span>
+                          <span>{currency.code}</span>
+                          <span className="text-gray-500">-</span>
+                          <span>{currency.name}</span>
+                        </span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteCurrency(currency.code)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CommandItem>
                 ))}
               </CommandGroup>
