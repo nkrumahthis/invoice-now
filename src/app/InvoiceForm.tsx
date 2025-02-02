@@ -33,6 +33,7 @@ interface InvoiceFormData {
     quantity: number
     unitPrice: number
     tax: number
+    taxType: 'fixed' | 'percentage'
     total: number
   }>
 }
@@ -97,6 +98,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
         quantity: 0,
         unitPrice: 0,
         tax: 0,
+        taxType: 'fixed',
         total: 0,
       },
     ],
@@ -143,23 +145,18 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
   }
 
   function updateItem(index: number, field: keyof (typeof formData.items)[0], value: string | number) {
-    const newItems = [...formData.items]
+    const newItems = [...formData.items];
+    
     newItems[index] = {
       ...newItems[index],
       [field]: value,
-    }
-
-    // Recalculate total
-    if (field === "quantity" || field === "unitPrice") {
-      const quantity = field === "quantity" ? Number(value) : newItems[index].quantity
-      const unitPrice = field === "unitPrice" ? Number(value) : newItems[index].unitPrice
-      newItems[index].total = quantity * unitPrice
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      items: newItems,
-    }))
+    };
+  
+    const quantity = newItems[index].quantity;
+    const unitPrice = newItems[index].unitPrice;
+    newItems[index].total = quantity * unitPrice;
+  
+    setFormData(prev => ({ ...prev, items: newItems }));
   }
 
   function addItem() {
@@ -173,6 +170,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
           unitPrice: 0,
           tax: 0,
           total: 0,
+          taxType: 'fixed',
         },
       ],
     }))
@@ -358,8 +356,13 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
           <CardTitle>Items</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {formData.items.map((item, index) => (
-            <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end border-b pb-4">
+          {formData.items.map((item, index) => {
+            const subtotal = item.quantity * item.unitPrice
+            const taxAmount = item.taxType === 'percentage'
+              ? (subtotal * item.tax) / 100
+              : item.tax
+            return (
+            <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start border-b pb-4">
               <div className="col-span-4">
                 <Label>Product/Service</Label>
                 <Input
@@ -389,21 +392,46 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
               </div>
               <div className="col-span-2">
                 <Label>Tax</Label>
-                <Input
-                  type="number"
-                  value={item.tax}
-                  onChange={(e) => updateItem(index, "tax", Number(e.target.value))}
-                  min="0"
-                  step="0.01"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    value={item.tax}
+                    onChange={(e) => updateItem(index, "tax", Number(e.target.value))}
+                    min="0"
+                    step="0.01"
+                    className="rounded-r-none min-w-20"
+                  />
+                  <select
+                    value={item.taxType}
+                    onChange={(e) => updateItem(index, "taxType", e.target.value as 'fixed' | 'percentage')}
+                    className="rounded-l-none border-l-0 px-2 bg-background"
+                    >
+                      <option value="fixed">{formData.currency}</option>
+                      <option value="percentage">%</option>
+                    </select>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Tax amount: {
+                    currencies[formData.currency]?.symbolNative || 
+                    currencies[formData.currency]?.symbol || 
+                    formData.currency
+                  } {taxAmount.toFixed(2)}
+                </p>
               </div>
-              <div className="col-span-1">
-                <Label>Total</Label>
+              <div className="col-span-2">
+                <Label>Subtotal</Label>
                 <p className="py-2">
                   {currencies[formData.currency]?.symbolNative ||
                     currencies[formData.currency]?.symbol ||
                     formData.currency}
                   {item.total.toFixed(2)}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  After Tax: {
+                    currencies[formData.currency]?.symbolNative || 
+                    currencies[formData.currency]?.symbol || 
+                    formData.currency
+                  } {(taxAmount + item.total).toFixed(2)}
                 </p>
               </div>
               <div className="col-span-1">
@@ -414,7 +442,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
                 )}
               </div>
             </div>
-          ))}
+          )})}
           <Button type="button" variant="outline" onClick={addItem} className="w-full">
             Add Item
           </Button>

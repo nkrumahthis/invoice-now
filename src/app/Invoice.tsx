@@ -7,6 +7,7 @@ interface InvoiceItem {
     quantity: number;
     unitPrice: number;
     tax: number;
+    taxType: 'percentage' | 'fixed';
     total: number;
 }
 
@@ -61,11 +62,16 @@ function Invoice({
     };
 
     const calculateSubtotal = () => {
-        return items.reduce((sum, item) => sum + item.total, 0);
+        return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
     };
 
     const calculateTotalTax = () => {
-        return items.reduce((sum, item) => sum + item.tax, 0);
+        return items.reduce((sum, item) => {
+            const itemTax = item.taxType === 'percentage' ?
+                (item.quantity * item.unitPrice) * (item.tax / 100)
+                : item.tax;
+            return sum + itemTax
+        }, 0);
     };
 
     return (
@@ -138,7 +144,10 @@ function Invoice({
                                 <td className="p-3">{item.product}</td>
                                 <td className="text-right p-3">{item.quantity}</td>
                                 <td className="text-right p-3">{symbol}{formatCurrency(item.unitPrice)}</td>
-                                <td className="text-right p-3">{symbol}{formatCurrency(item.tax)}</td>
+                                <td className="text-right p-3">{item.taxType === 'percentage'
+                                    ? `${item.tax}%`
+                                    : `${symbol}${formatCurrency(item.unitPrice)}`}
+                                </td>
                                 <td className="text-right p-3">{symbol}{formatCurrency(item.total)}</td>
                             </tr>
                         ))}
