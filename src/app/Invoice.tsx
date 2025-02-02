@@ -62,7 +62,7 @@ function Invoice({
     };
 
     const calculateSubtotal = () => {
-        return items.reduce((sum, item) => sum + item.total, 0);
+        return items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
     };
 
     const calculateTotalTax = () => {
@@ -144,9 +144,10 @@ function Invoice({
                                 <td className="p-3">{item.product}</td>
                                 <td className="text-right p-3">{item.quantity}</td>
                                 <td className="text-right p-3">{symbol}{formatCurrency(item.unitPrice)}</td>
-                                <td className="text-right p-3">{symbol}{item.taxType === 'percentage' ?
-                                    formatCurrency((item.quantity * item.unitPrice) * (item.tax / 100))
-                                    : formatCurrency(item.tax)}</td>
+                                <td className="text-right p-3">{item.taxType === 'percentage'
+                                    ? `${item.tax}%`
+                                    : `${symbol}${formatCurrency(item.unitPrice)}`}
+                                </td>
                                 <td className="text-right p-3">{symbol}{formatCurrency(item.total)}</td>
                             </tr>
                         ))}

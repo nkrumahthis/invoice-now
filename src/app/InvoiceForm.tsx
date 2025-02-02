@@ -145,26 +145,18 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
   }
 
   function updateItem(index: number, field: keyof (typeof formData.items)[0], value: string | number) {
-    const newItems = [...formData.items]
-    const item = newItems[index]
-
-    if (field === 'taxType') {
-      item.taxType = value as 'fixed' | 'percentage'
-    } else {
-      item[field] = value as never
-    }
-
-    // Recalculate total
-    const subtotal = item.quantity * item.unitPrice
-    const taxAmount = item.taxType === 'percentage' 
-      ? subtotal * (item.tax / 100)
-      : item.tax
-    item.total = subtotal + taxAmount
-
-    setFormData((prev) => ({
-      ...prev,
-      items: newItems,
-    }))
+    const newItems = [...formData.items];
+    
+    newItems[index] = {
+      ...newItems[index],
+      [field]: value,
+    };
+  
+    const quantity = newItems[index].quantity;
+    const unitPrice = newItems[index].unitPrice;
+    newItems[index].total = quantity * unitPrice;
+  
+    setFormData(prev => ({ ...prev, items: newItems }));
   }
 
   function addItem() {
@@ -427,12 +419,19 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
                 </p>
               </div>
               <div className="col-span-2">
-                <Label>Total</Label>
+                <Label>Subtotal</Label>
                 <p className="py-2">
                   {currencies[formData.currency]?.symbolNative ||
                     currencies[formData.currency]?.symbol ||
                     formData.currency}
                   {item.total.toFixed(2)}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  After Tax: {
+                    currencies[formData.currency]?.symbolNative || 
+                    currencies[formData.currency]?.symbol || 
+                    formData.currency
+                  } {(taxAmount + item.total).toFixed(2)}
                 </p>
               </div>
               <div className="col-span-1">
