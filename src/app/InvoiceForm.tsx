@@ -400,7 +400,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
               </div>
               <div className="col-span-2">
                 <Label>Tax</Label>
-                <div className="flex">
+                <div className="flex gap-2">
                   <Input
                     type="number"
                     value={item.tax}
@@ -414,7 +414,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
                     onChange={(e) => updateItem(index, "taxType", e.target.value as 'fixed' | 'percentage')}
                     className="rounded-l-none border-l-0 px-2 bg-background"
                     >
-                      <option value="fixed">Fixed</option>
+                      <option value="fixed">{formData.currency}</option>
                       <option value="percentage">%</option>
                     </select>
                 </div>
