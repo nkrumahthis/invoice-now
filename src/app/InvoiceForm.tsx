@@ -375,18 +375,20 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
                 <Label>Quantity</Label>
                 <Input
                   type="number"
-                  value={item.quantity}
+                  value={item.quantity === 0 ? "" : item.quantity}
                   onChange={(e) => updateItem(index, "quantity", Number(e.target.value))}
                   min="0"
+                  placeholder="0"
                 />
               </div>
               <div className="col-span-2">
                 <Label>Unit Price</Label>
                 <Input
                   type="number"
-                  value={item.unitPrice}
+                  value={item.unitPrice === 0 ? "" : item.unitPrice}
                   onChange={(e) => updateItem(index, "unitPrice", Number(e.target.value))}
                   min="0"
+                  placeholder="0"
                   step="0.01"
                 />
               </div>
@@ -395,10 +397,11 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
                 <div className="flex gap-2">
                   <Input
                     type="number"
-                    value={item.tax}
+                    value={item.tax === 0 ? "" : item.tax}
                     onChange={(e) => updateItem(index, "tax", Number(e.target.value))}
                     min="0"
                     step="0.01"
+                    placeholder="0"
                     className="rounded-r-none min-w-20"
                   />
                   <select
