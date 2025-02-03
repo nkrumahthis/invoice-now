@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 export default function InvoicePage() {
     const [invoiceData, setInvoiceData] = useState<any>(null);
     const invoiceRef = useRef<HTMLDivElement>(null);
+    const [formData, setFormData] = useState<any>(null);
 
     const generatePDF = async () => {
         if (!invoiceRef.current) return;
@@ -33,13 +34,17 @@ export default function InvoicePage() {
 
     const handleFormSubmit = (data: any) => {
         setInvoiceData(data);
+        setFormData(data)
     };
 
     return (
         <div className="min-h-screen w-full bg-gray-100 py-8 px-4">
             {!invoiceData ? (
                 <div className="max-w-6xl mx-auto">
-                    <InvoiceForm onSubmit={handleFormSubmit} />
+                    <InvoiceForm
+                        onSubmit={handleFormSubmit}
+                        initialData={formData}
+                    />
                 </div>
             ) : (
                 <div className="max-w-4xl mx-auto">
@@ -50,7 +55,10 @@ export default function InvoicePage() {
                         Download PDF
                     </Button>
                     <button
-                        onClick={() => setInvoiceData(null)}
+                        onClick={() => {
+                            setFormData(invoiceData)
+                            setInvoiceData(null)
+                        }}
                         className="mb-4 ml-4 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
                     >
                         Edit Invoice

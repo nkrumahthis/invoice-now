@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { init } from "next/dist/compiled/webpack/webpack"
 
 interface InvoiceFormData {
   invoiceNumber: string
@@ -39,10 +40,11 @@ interface InvoiceFormData {
 }
 
 interface InvoiceFormProps {
-  onSubmit: (data: InvoiceFormData) => void
+  onSubmit: (data: InvoiceFormData) => void;
+  initialData?: InvoiceFormData;
 }
 
-function InvoiceForm({ onSubmit }: InvoiceFormProps) {
+function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
   // Helper function to get today's date in YYYY-MM-DD format
   function getTodayDate() {
     return new Date().toISOString().split("T")[0]
@@ -73,7 +75,7 @@ function InvoiceForm({ onSubmit }: InvoiceFormProps) {
     return `${initials}-${year}${month}${day}-0001`
   }
 
-  const [formData, setFormData] = useState<InvoiceFormData>({
+  const [formData, setFormData] = useState<InvoiceFormData>(initialData || {
     invoiceNumber: generateInvoiceNumber("Company"),
     issueDate: getTodayDate(),
     dueDate: getDueDate(),
