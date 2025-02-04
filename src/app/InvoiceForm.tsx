@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { storage } from "@/lib/storage"
-import { CloudOff, CloudOffIcon } from "lucide-react"
+import { CircleMinusIcon, CloudOffIcon } from "lucide-react"
 
 const STORAGE_KEY = 'invoiceFromDetails'
 
@@ -264,7 +264,10 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
         <CardHeader>
           <CardTitle><div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>From (Your Details)</div>
-            <div className="flex flex-row text-sm text-gray-500 font-normal mt-2 md:mt-0 align-center"><CloudOffIcon /><span className="">Your company data is saved offline in your browser</span></div>
+            <div className="flex flex-row text-sm text-gray-500 font-normal mt-2 md:mt-0 align-center">
+              <CloudOffIcon className="mr-1"/>
+              <span className="">Your company data is saved offline in your browser</span>
+            </div>
             <div className="mt-2 md:mt-0">
               <Button
                 type="button"
@@ -284,6 +287,7 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
                   }))
                 }}
               >
+                <CircleMinusIcon className="h-4 w-4" />
                 Clear Saved Details
               </Button>
             </div>
