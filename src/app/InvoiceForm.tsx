@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { storage } from "@/lib/storage"
+import { CloudOff, CloudOffIcon } from "lucide-react"
 
 const STORAGE_KEY = 'invoiceFromDetails'
 
@@ -261,13 +262,14 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle><div className="flex justify-between">
+          <CardTitle><div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>From (Your Details)</div>
-            <p className="text-sm text-gray-500">Your company data is saved offline in your browser</p>
-            <div>
+            <div className="flex flex-row text-sm text-gray-500 font-normal mt-2 md:mt-0 align-center"><CloudOffIcon /><span className="">Your company data is saved offline in your browser</span></div>
+            <div className="mt-2 md:mt-0">
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={() => {
                   storage.remove(STORAGE_KEY)
                   setFormData(prev => ({
