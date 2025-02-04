@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { init } from "next/dist/compiled/webpack/webpack"
+import { storage } from "@/lib/storage"
+
+const STORAGE_KEY = 'invoiceFromDetails'
 
 interface InvoiceFormData {
   invoiceNumber: string
@@ -106,6 +108,22 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
     ],
   })
 
+  // Load saved data on component mount
+  useEffect(() => {
+    const savedFromDetails = storage.get(STORAGE_KEY)
+    if (savedFromDetails) {
+      setFormData(prev => ({
+        ...prev,
+        from: savedFromDetails
+      }))
+    }
+  }, [])
+
+  // Save from data whenever from from details change
+  useEffect(() => {
+    storage.set(STORAGE_KEY, formData.from)
+  }, [formData.from]);
+
   // Update invoice number when company name changes
   useEffect(() => {
     setFormData((prev) => ({
@@ -148,16 +166,16 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
 
   function updateItem(index: number, field: keyof (typeof formData.items)[0], value: string | number) {
     const newItems = [...formData.items];
-    
+
     newItems[index] = {
       ...newItems[index],
       [field]: value,
     };
-  
+
     const quantity = newItems[index].quantity;
     const unitPrice = newItems[index].unitPrice;
     newItems[index].total = quantity * unitPrice;
-  
+
     setFormData(prev => ({ ...prev, items: newItems }));
   }
 
@@ -187,6 +205,7 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
     onSubmit(formData)
   }
 
@@ -242,7 +261,31 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>From (Your Details)</CardTitle>
+          <CardTitle><div className="flex justify-between">
+            <div>From (Your Details)</div>
+            <p className="text-sm text-gray-500">Your company data is saved offline in your browser</p>
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  storage.remove(STORAGE_KEY)
+                  setFormData(prev => ({
+                    ...prev,
+                    from: {
+                      company: "",
+                      address: ["", "", ""],
+                      email: "",
+                      phone: "",
+                      website: "",
+                    }
+                  }))
+                }}
+              >
+                Clear Saved Details
+              </Button>
+            </div>
+          </div></CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
@@ -364,90 +407,91 @@ function InvoiceForm({ onSubmit, initialData }: InvoiceFormProps) {
               ? (subtotal * item.tax) / 100
               : item.tax
             return (
-            <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start border-b pb-4">
-              <div className="col-span-4">
-                <Label>Product/Service</Label>
-                <Input
-                  value={item.product}
-                  onChange={(e) => updateItem(index, "product", e.target.value)}
-                  placeholder="Item description"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label>Quantity</Label>
-                <Input
-                  type="number"
-                  value={item.quantity === 0 ? "" : item.quantity}
-                  onChange={(e) => updateItem(index, "quantity", Number(e.target.value))}
-                  min="0"
-                  placeholder="0"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label>Unit Price</Label>
-                <Input
-                  type="number"
-                  value={item.unitPrice === 0 ? "" : item.unitPrice}
-                  onChange={(e) => updateItem(index, "unitPrice", Number(e.target.value))}
-                  min="0"
-                  placeholder="0"
-                  step="0.01"
-                />
-              </div>
-              <div className="col-span-2">
-                <Label>Tax</Label>
-                <div className="flex gap-2">
+              <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start border-b pb-4">
+                <div className="col-span-4">
+                  <Label>Product/Service</Label>
+                  <Input
+                    value={item.product}
+                    onChange={(e) => updateItem(index, "product", e.target.value)}
+                    placeholder="Item description"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label>Quantity</Label>
                   <Input
                     type="number"
-                    value={item.tax === 0 ? "" : item.tax}
-                    onChange={(e) => updateItem(index, "tax", Number(e.target.value))}
+                    value={item.quantity === 0 ? "" : item.quantity}
+                    onChange={(e) => updateItem(index, "quantity", Number(e.target.value))}
                     min="0"
-                    step="0.01"
                     placeholder="0"
-                    className="rounded-r-none min-w-20"
                   />
-                  <select
-                    value={item.taxType}
-                    onChange={(e) => updateItem(index, "taxType", e.target.value as 'fixed' | 'percentage')}
-                    className="rounded-l-none border-l-0 px-2 bg-background"
+                </div>
+                <div className="col-span-2">
+                  <Label>Unit Price</Label>
+                  <Input
+                    type="number"
+                    value={item.unitPrice === 0 ? "" : item.unitPrice}
+                    onChange={(e) => updateItem(index, "unitPrice", Number(e.target.value))}
+                    min="0"
+                    placeholder="0"
+                    step="0.01"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label>Tax</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      value={item.tax === 0 ? "" : item.tax}
+                      onChange={(e) => updateItem(index, "tax", Number(e.target.value))}
+                      min="0"
+                      step="0.01"
+                      placeholder="0"
+                      className="rounded-r-none min-w-20"
+                    />
+                    <select
+                      value={item.taxType}
+                      onChange={(e) => updateItem(index, "taxType", e.target.value as 'fixed' | 'percentage')}
+                      className="rounded-l-none border-l-0 px-2 bg-background"
                     >
                       <option value="fixed">{formData.currency}</option>
                       <option value="percentage">%</option>
                     </select>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Tax amount: {
+                      currencies[formData.currency]?.symbolNative ||
+                      currencies[formData.currency]?.symbol ||
+                      formData.currency
+                    } {taxAmount.toFixed(2)}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Tax amount: {
-                    currencies[formData.currency]?.symbolNative || 
-                    currencies[formData.currency]?.symbol || 
-                    formData.currency
-                  } {taxAmount.toFixed(2)}
-                </p>
+                <div className="col-span-2">
+                  <Label>Subtotal</Label>
+                  <p className="py-2">
+                    {currencies[formData.currency]?.symbolNative ||
+                      currencies[formData.currency]?.symbol ||
+                      formData.currency}
+                    {item.total.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    After Tax: {
+                      currencies[formData.currency]?.symbolNative ||
+                      currencies[formData.currency]?.symbol ||
+                      formData.currency
+                    } {(taxAmount + item.total).toFixed(2)}
+                  </p>
+                </div>
+                <div className="col-span-1">
+                  {formData.items.length > 1 && (
+                    <Button type="button" variant="destructive" onClick={() => removeItem(index)} className="w-full">
+                      Remove
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="col-span-2">
-                <Label>Subtotal</Label>
-                <p className="py-2">
-                  {currencies[formData.currency]?.symbolNative ||
-                    currencies[formData.currency]?.symbol ||
-                    formData.currency}
-                  {item.total.toFixed(2)}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  After Tax: {
-                    currencies[formData.currency]?.symbolNative || 
-                    currencies[formData.currency]?.symbol || 
-                    formData.currency
-                  } {(taxAmount + item.total).toFixed(2)}
-                </p>
-              </div>
-              <div className="col-span-1">
-                {formData.items.length > 1 && (
-                  <Button type="button" variant="destructive" onClick={() => removeItem(index)} className="w-full">
-                    Remove
-                  </Button>
-                )}
-              </div>
-            </div>
-          )})}
+            )
+          })}
           <Button type="button" variant="outline" onClick={addItem} className="w-full">
             Add Item
           </Button>
